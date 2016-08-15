@@ -1,0 +1,39 @@
+package pack;
+
+import java.awt.Graphics;
+import java.awt.Graphics2D;
+
+public class Missiles {
+
+	public int bullets;
+	public static int bulletspeed = 5;
+	public static double x = 608;
+	public static double y = 448;
+	public static double xinc = 0;
+	public static double yinc = 0;
+	public static int bx = 0;
+	public static int by = 0;
+	
+	public static boolean ex = false;	
+	public static boolean shot = false;
+	
+	public static int missiles = 0;
+	
+	public static void getBullet(int x, int y) {
+		bx = x;
+		by = y;
+		
+	}
+
+	
+	public static void UpdateBullet() {
+		if (ex){
+		y-=yinc*bulletspeed;
+		x-=xinc*bulletspeed;}
+		else{
+		y+=yinc*bulletspeed;
+		x+=xinc*bulletspeed;}
+		//Client.sendBullet((int)x,(int)y);
+	}
+
+}
