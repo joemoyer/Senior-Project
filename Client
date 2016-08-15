@@ -1,0 +1,151 @@
+package pack;
+
+
+import java.net.*;
+import java.util.Scanner;
+import java.applet.Applet;
+import java.awt.Graphics;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
+import java.io.*;
+
+
+public class Client implements Runnable {
+	
+	static Socket socket, Msocket;
+	static DataInputStream in;
+	static DataOutputStream out;
+	
+	Character character;
+	Board board;
+	Missiles m;
+	
+	public static int playerid;
+	
+	public Client() {
+
+		try {
+		System.out.println("Connecting...");
+		socket =  new Socket("localhost", 7777);
+		System.out.println("Connection successful.");
+		in = new DataInputStream(socket.getInputStream());
+		playerid = in.readInt();
+		out = new DataOutputStream(socket.getOutputStream());
+		Input input = new Input(in, this);
+		Thread thread = new Thread(input);
+		thread.start();
+		Thread thread2 = new Thread(this);
+		thread2.start();
+		} catch (Exception e) {
+			System.out.println("Unable to start client");
+		}
+	}
+	
+
+	@Override
+	public void run() {
+		while (true) {
+		try {
+			System.out.println(playerid);
+			out.writeInt(1);
+			out.writeInt(playerid);
+			out.writeInt(Character.getX());
+			out.writeInt(Character.getY());
+			out.writeInt(Character.getDir());
+			out.writeInt(Character.getAnim());
+			/*out.writeInt(m.ifBull);
+			out.writeDouble(m.x);
+			out.writeDouble(m.y);
+			out.writeDouble(m.xinc);
+			out.writeDouble(m.yinc);*/
+		} catch(Exception e) {
+			System.out.println("Error Sending Coordinates");
+		}
+		try {
+			Thread.sleep(100);
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		}
+
+	}
+	
+	public static void sendBullet(int x, int y) {
+		try {
+		out.writeInt(2);
+		out.writeInt(x); 
+		out.writeInt(y);
+		} catch(Exception e) {
+			System.out.println("Error Sending Bullet");
+		}
+	}
+	
+	/*public void AddBullet(double x, double y, double xinc, double yinc) throws Exception {
+		out.writeDouble(x);
+		out.writeDouble(y);
+		out.writeDouble(xinc);
+		out.writeDouble(yinc);
+	}*/
+	
+	public void updateCoordinates(int pid, int x, int y, int dir, int anim, int AU) {
+		Board.xin[pid] = x;
+		//System.out.println("X: " + x);
+		Board.yin[pid] = y;
+		//System.out.println("Y: " + y);
+		Board.dir[pid] = dir;
+		//System.out.println("Dir: " + dir);
+		Board.anim[pid] = anim;
+		//System.out.println("Anim: " + anim);
+		Board.AU = AU;
+		//System.out.println("AU: " + AU);
+	}
+	
+}
+
+class Input implements Runnable {
+	
+	DataInputStream in;
+	Client client;
+	Board b;
+
+	public Input(DataInputStream in, Client client) {
+		this.in = in;
+		this.client = client;
+	}
+
+	@Override
+	public void run() {
+		while (true) {
+
+			try {
+				int command = in.readInt();
+				
+				switch (command) {
+				
+				case 1:
+				int playerid = in.readInt();
+				int x = in.readInt();
+				int y = in.readInt();
+				int dir = in.readInt();
+				int anim = in.readInt();
+				int AU = in.readInt();
+				if (playerid < 10);
+				client.updateCoordinates(playerid, x, y, dir, anim, AU);
+				break;
+				
+				case 2:
+					int bx = in.readInt();
+					int by = in.readInt();
+					Missiles.getBullet(bx,by);
+					break;
+					
+				}
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				System.out.println("failed to input data");
+			}
+		}
+	}
+	
+}
