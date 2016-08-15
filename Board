@@ -1,0 +1,182 @@
+package pack;
+
+import java.awt.Color;
+import java.awt.Font;
+import java.awt.Graphics;
+import java.awt.Graphics2D;
+import java.awt.Image;
+import java.awt.Toolkit;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
+
+import javax.swing.ImageIcon;
+import javax.swing.JPanel;
+import javax.swing.Timer;
+
+@SuppressWarnings("serial")
+public class Board extends JPanel implements ActionListener {
+
+	private Timer timer;
+	private Character character;
+	private final int DELAY = 10;
+	private Image background;
+
+	Client client;
+	static Missiles m;
+
+	static int xin[] = new int[10], bxin[] = new int[50];
+	static int yin[] = new int[10], byin[] = new int[50];
+	static int dir[] = new int[10];
+	static int anim[] = new int[10];
+	static int AU = 0, AB = 0;
+	
+	public int dx = 1, dy = 1;
+	
+
+	public Board() {
+
+		initBoard();
+		LoadImage();
+
+	}
+
+	public void LoadImage() {
+		ImageIcon i = new ImageIcon("background.png");
+		background = i.getImage();
+	}
+
+	private void initBoard() {
+
+		addKeyListener(new TAdapter());
+		addMouseListener(new MAdapter());
+		setFocusable(true);
+		setBackground(Color.GRAY);
+
+		client = new Client();
+		character = new Character();
+
+		timer = new Timer(DELAY, this);
+		timer.start();
+	}
+
+	@Override
+	public void paintComponent(Graphics g) {
+		super.paintComponent(g);
+
+		doDrawing(g);
+
+		Toolkit.getDefaultToolkit().sync();
+	}
+
+	private void doDrawing(Graphics g) {
+
+		Graphics2D g2d = (Graphics2D) g;
+		g2d.drawImage(background, Character.getX(), Character.getY(), this);
+		g2d.drawImage(Character.getImage(), 608, 448, this);
+		for (int i = 0; i < AU; i++) {
+			if (i != Client.playerid) {
+				g2d.drawImage(Character.Animations[dir[i]][anim[i]], ((Character.getX() - xin[i]) + 608),
+						((Character.getY() - yin[i]) + 448), this);
+			}
+		}
+		
+		if (Missiles.shot == true) {
+			Missiles.UpdateBullet();
+			g2d.drawImage(Character.bullet, (int)Missiles.x, (int)Missiles.y, this);
+		}
+		
+	}
+
+	@Override
+	public void actionPerformed(ActionEvent e) {
+
+		character.move();
+		repaint();
+	}
+
+	private class TAdapter extends KeyAdapter {
+
+		@Override
+		public void keyReleased(KeyEvent e) {
+			character.keyReleased(e);
+		}
+
+		@Override
+		public void keyPressed(KeyEvent e) {
+			character.keyDown(e);
+		}
+	}
+
+	public void drawString(Graphics g, String msg, String fontType, Color color, int font, int x, int y) {
+
+		g.setFont(new Font(fontType, Font.PLAIN, font));
+
+		g.setColor(color);
+
+		g.drawString(msg, x, y);
+
+	}
+
+	private class MAdapter implements MouseListener {
+
+		@Override
+		public void mouseClicked(MouseEvent e) {
+			
+			double x = e.getX();
+			double y = e.getY();	
+			
+			double xdif = x - 608;
+			double ydif = y - 448;
+			double angle = Math.atan(ydif / xdif);			
+			
+			Missiles.xinc = Math.cos(angle);
+			Missiles.yinc = Math.sin(angle);
+			
+			System.out.println(angle + " x " + Missiles.xinc + " y " + Missiles.yinc);
+			
+			Missiles.x = 608;
+			Missiles.y = 448;
+			
+			if (xdif < 0) {
+				Missiles.ex = true;
+			}
+			else {
+				Missiles.ex = false;
+			}
+			
+			Missiles.shot = true;
+		}
+
+		@Override
+		public void mouseEntered(MouseEvent arg0) {
+			// TODO Auto-generated method stub
+
+		}
+
+		@Override
+		public void mouseExited(MouseEvent arg0) {
+			// TODO Auto-generated method stub
+
+		}
+
+		@Override
+		public void mousePressed(MouseEvent e) {
+			// m.mousePressed(e);
+
+		}
+
+		@Override
+		public void mouseReleased(MouseEvent e) {
+			// m.mouseReleased(e);
+
+		}
+	}
+	
+	public void Say(String s) {
+		System.out.println(s);
+	}
+}
