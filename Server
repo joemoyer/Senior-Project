@@ -1,0 +1,133 @@
+package game;
+
+import java.net.*;
+import java.util.ArrayList;
+import java.io.*;
+
+public class Server {
+
+	static ServerSocket serverSocket, missileServSocket;
+	static Socket socket, missileSocket;
+	static DataOutputStream out, Mout;
+	static Users[] user = new Users[10];
+	static DataInputStream in, Min;
+
+	public static void main(String[] args) throws Exception {
+		Say("Starting Server...");
+		serverSocket = new ServerSocket(7777);
+		Say("Server Started...");
+		while (true) {
+			socket = serverSocket.accept();
+			for (int i = 0; i < 10; i++) {
+				if (user[i] == null) {
+					System.out.println("Connection from:" + socket.getInetAddress());
+					out = new DataOutputStream(socket.getOutputStream());
+					in = new DataInputStream(socket.getInputStream());
+					System.out.println(i);
+					user[i] = new Users(out, in, user, i);
+					Thread thread = new Thread(user[i]);
+					thread.start();
+					System.out.println(user);
+					break;
+				}
+			}
+		}
+	}
+
+	public static void Say(String s) {
+		System.out.println(s);
+	}
+
+}
+
+class Users implements Runnable {
+
+	DataOutputStream out;
+	DataInputStream in;
+	Users[] user = new Users[10];
+	String name;
+	int command;
+	int playerid;
+	int playeridin;
+	int xin;
+	int yin;
+	int dirin;
+	int animin;
+	static int AmtUser = 0;
+
+	public Users(DataOutputStream out, DataInputStream in, Users[] user, int pid) {
+		this.out = out;
+		this.in = in;
+		this.user = user;
+		this.playerid = pid;
+	}
+
+	public void run() {
+		try {
+			out.writeInt(playerid);
+		} catch (IOException e1) {
+			System.out.println("Failed to send PlayerID");
+		}
+		while (true) {
+			AmtUser = 0;
+			for (int i = 0; i < 10; i++) {
+				if (user[i] != null) {
+					AmtUser++;
+				}
+			}
+			try {
+				command = in.readInt();
+				switch (command) {
+				case 1:
+					playeridin = in.readInt();
+					xin = in.readInt();
+					yin = in.readInt();
+					dirin = in.readInt();
+					animin = in.readInt();
+
+					for (int i = 0; i < 10; i++) {
+						if (user[i] != null) {
+							user[i].out.writeInt(1);
+							user[i].out.writeInt(playeridin);
+							user[i].out.writeInt(xin);
+							user[i].out.writeInt(yin);
+							user[i].out.writeInt(dirin);
+							user[i].out.writeInt(animin);
+							user[i].out.writeInt(AmtUser);
+
+						}
+					}
+					break;
+					
+				case 2:
+					playeridin = in.readInt();
+					int bx = in.readInt();
+					int by = in.readInt();
+					
+					for (int i = 0; i < 10; i++) {
+						if (user[i] != null) {
+							user[i].out.writeInt(2);
+							user[i].out.writeInt(bx);
+							user[i].out.writeInt(by);
+						}
+					}
+					break;
+					
+				}
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				try {
+					out.close();
+					in.close();
+				} catch (IOException e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				}
+				user[playerid] = null;
+			}
+
+		}
+
+	}
+
+}
