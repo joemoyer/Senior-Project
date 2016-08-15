@@ -1,0 +1,198 @@
+package pack;
+
+import java.awt.Image;
+import java.awt.event.KeyEvent;
+import javax.swing.ImageIcon;
+
+public class Character {
+
+	private static int dx;
+	private static int dy;
+	private static int x = 0;
+	private static int y = 0;
+	private static boolean left = false, right = false, up = false, down = false;
+	private static int speed = 5, dir = 0, anim[] = { 0, 0 };
+	private static Image image;
+	static Image Animations[][] = new Image[9][2], bullet;
+	
+	Missiles m;
+
+	public Character() {
+
+		initCraft();
+	}
+
+	private void initCraft() {
+
+		LoadImages();
+
+		ImageIcon ii = new ImageIcon("guy.png");
+		image = ii.getImage();
+
+		x = 0;
+		y = 0;
+	}
+
+	public void LoadImages() {
+		ImageIcon ii = new ImageIcon("guy.png");
+		image = ii.getImage();
+		
+		Animations[0][0] = new ImageIcon("soldStill1.png").getImage();
+		Animations[0][1] = new ImageIcon("soldStill2.png").getImage();
+		Animations[1][0] = new ImageIcon("soldUp1.png").getImage();
+		Animations[1][1] = new ImageIcon("soldUp2.png").getImage();
+		Animations[2][0] = new ImageIcon("snakStill1.png").getImage();
+		Animations[2][1] = new ImageIcon("snakStill2.png").getImage();
+		Animations[3][0] = new ImageIcon("soldRight1.png").getImage();
+		Animations[3][1] = new ImageIcon("soldRight2.png").getImage();
+		Animations[4][0] = new ImageIcon("snakStill1.png").getImage();
+		Animations[4][1] = new ImageIcon("snakStill2.png").getImage();
+		Animations[5][0] = new ImageIcon("soldDown1.png").getImage();
+		Animations[5][1] = new ImageIcon("soldDown2.png").getImage();
+		Animations[6][0] = new ImageIcon("snakStill1.png").getImage();
+		Animations[6][1] = new ImageIcon("snakStill2.png").getImage();
+		Animations[7][0] = new ImageIcon("soldLeft1.png").getImage();
+		Animations[7][1] = new ImageIcon("soldLeft2.png").getImage();
+		Animations[8][0] = new ImageIcon("snakStill1.png").getImage();
+		Animations[8][1] = new ImageIcon("snakStill2.png").getImage();
+		bullet = new ImageIcon("Bullet.png").getImage();
+
+	}
+	
+    protected void loadImage(String imageName) {
+
+        ImageIcon ii = new ImageIcon(imageName);
+        image = ii.getImage();
+    }
+
+	public void move() {
+		if ((left == true && right == true) || (left == false && right == false)) {
+			dx = 0;
+		} else {
+			if (left == true) {
+				dx = speed;
+			}
+			if (right == true) {
+				dx = speed * -1;
+			}
+		}
+		if ((up == true && down == true) || (up == false && down == false)) {
+			dy = 0;
+		} else {
+			if (up == true) {
+				dy = speed;
+			}
+			if (down == true) {
+				dy = speed * -1;
+			}
+		}
+
+		// up
+		if (up == true && down == false && left == right)
+			dir = 1;
+		// up - left
+		if (up == true && right == false && down == false && left == true)
+			dir = 7;
+		// left
+		if (left == true && right == false && up == down)
+			dir = 7;
+		// down - left
+		if (up == false && right == false && down == true && left == true)
+			dir = 7;
+		// down
+		if (up == false && down == true && left == right)
+			dir = 5;
+		// down - right
+		if (up == false && right == true && down == true && left == false)
+			dir = 3;
+		// right
+		if (left == false && right == true && up == down)
+			dir = 3;
+		// up - right
+		if (up == true && right == true && down == false && left == false)
+			dir = 3;
+		// still
+		if (left == right && up == down)
+			dir = 0;
+		animUpdate();
+
+		x += dx;
+		y += dy;
+	}
+
+	public static void animUpdate() {
+		anim[0]++;
+		if (anim[0] > (60 - (10 * speed))) {
+			if (anim[1] == 1)
+				anim[1] = 0;
+			else
+				anim[1] = 1;
+			anim[0] = 0;
+
+		}
+
+		image = Animations[dir][anim[1]];
+	}
+
+	public static int getX() {
+		return x;
+	}
+
+	public static int getY() {
+		return y;
+	}
+
+	public static Image getImage() {
+		return image;
+	}
+	
+	public static int getDir() {
+		return dir;
+	}
+	
+	public static int getAnim() {
+		return anim[1];
+	}
+
+	public void keyDown(KeyEvent e) {
+
+		int key = e.getKeyCode();
+
+		if (key == KeyEvent.VK_A || key == KeyEvent.VK_LEFT) {
+			left = true;
+		}
+
+		if (key == KeyEvent.VK_D || key == KeyEvent.VK_RIGHT) {
+			right = true;
+		}
+
+		if (key == KeyEvent.VK_W || key == KeyEvent.VK_UP) {
+			up = true;
+		}
+
+		if (key == KeyEvent.VK_S || key == KeyEvent.VK_DOWN) {
+			down = true;
+		}
+	}
+
+	public void keyReleased(KeyEvent e) {
+
+		int key = e.getKeyCode();
+
+		if (key == KeyEvent.VK_A || key == KeyEvent.VK_LEFT) {
+			left = false;
+		}
+
+		if (key == KeyEvent.VK_D || key == KeyEvent.VK_RIGHT) {
+			right = false;
+		}
+
+		if (key == KeyEvent.VK_W || key == KeyEvent.VK_UP) {
+			up = false;
+		}
+
+		if (key == KeyEvent.VK_S || key == KeyEvent.VK_DOWN) {
+			down = false;
+		}
+	}
+}
